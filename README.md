@@ -107,6 +107,16 @@ para correr el archivo ejecutar desde la raiz del proyecto
 ### Ejercicio N°2:
 Modificar el cliente y el servidor para lograr que realizar cambios en el archivo de configuración no requiera reconstruír las imágenes de Docker para que los mismos sean efectivos. La configuración a través del archivo correspondiente (`config.ini` y `config.yaml`, dependiendo de la aplicación) debe ser inyectada en el container y persistida por fuera de la imagen (hint: `docker volumes`).
 
+#### Solucion
+
+se eliminaron del dockerfile de client la copia de los configFile para poder usar los volumes en el docker-compose. Ademas, se eliminaron del script los log_levels para poder configurarlos desde los archivos
+
+para correr el archivo ejecutar desde la raiz del proyecto
+
+    ```
+    #!/bin/bash
+    ./generar-compose.sh <nomre_del_archivo> <cantidad_de_clientes>
+    ```
 
 ### Ejercicio N°3:
 Crear un script de bash `validar-echo-server.sh` que permita verificar el correcto funcionamiento del servidor utilizando el comando `netcat` para interactuar con el mismo. Dado que el servidor es un echo server, se debe enviar un mensaje al servidor y esperar recibir el mismo mensaje enviado.
