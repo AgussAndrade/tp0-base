@@ -139,6 +139,12 @@ para correr el archivo ejecutar desde la raiz del proyecto
 ### Ejercicio N°4:
 Modificar servidor y cliente para que ambos sistemas terminen de forma _graceful_ al recibir la signal SIGTERM. Terminar la aplicación de forma _graceful_ implica que todos los _file descriptors_ (entre los que se encuentran archivos, sockets, threads y procesos) deben cerrarse correctamente antes que el thread de la aplicación principal muera. Loguear mensajes en el cierre de cada recurso (hint: Verificar que hace el flag `-t` utilizado en el comando `docker compose down`).
 
+#### Solucion
+
+se modificaron los archivos client.go y server.go de acuerdo a lo pedido. 
+ Por la parte del server se agrego un booleano como atributo para poder utilizarlo como señal de si deberia apagarse o de acuerdo a la señal
+ Por el lado del cliente se agrego un contexto al loop que cancelara si se escucha la señal SIGTERM mediante un signal.notify
+
 ## Parte 2: Repaso de Comunicaciones
 
 Las secciones de repaso del trabajo práctico plantean un caso de uso denominado **Lotería Nacional**. Para la resolución de las mismas deberá utilizarse como base el código fuente provisto en la primera parte, con las modificaciones agregadas en el ejercicio 4.

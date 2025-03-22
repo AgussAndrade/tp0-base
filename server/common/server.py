@@ -1,6 +1,7 @@
 import socket
 import logging
-
+import signal
+import sys
 
 class Server:
     def __init__(self, port, listen_backlog):
@@ -8,6 +9,19 @@ class Server:
         self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._server_socket.bind(('', port))
         self._server_socket.listen(listen_backlog)
+        self._running = True
+
+        signal.signal(signal.SIGTERM, self._graceful_shutdown)
+
+    def _graceful_shutdown(self, signum):
+        logging.info(f'action: shutdown | result: in_progress | signal: {signum}')
+        self._running = False
+        try:
+            self._server_socket.close()
+            logging.info('action: close_socket | result: success')
+        except Exception as e:
+            logging.error(f'action: close_socket | result: fail | error: {e}')
+        sys.exit(0)
 
     def run(self):
         """
@@ -17,12 +31,13 @@ class Server:
         communication with a client. After client with communucation
         finishes, servers starts to accept new connections again
         """
-
-        # TODO: Modify this program to handle signal to graceful shutdown
-        # the server
-        while True:
-            client_sock = self.__accept_new_connection()
-            self.__handle_client_connection(client_sock)
+        while self._running:
+            try:
+                client_sock = self.__accept_new_connection()
+                if client_sock:
+                    self.__handle_client_connection(client_sock)
+            except OSError:
+                break
 
     def __handle_client_connection(self, client_sock):
         """
@@ -42,6 +57,7 @@ class Server:
             logging.error("action: receive_message | result: fail | error: {e}")
         finally:
             client_sock.close()
+            logging.info(f'action: close_client_socket | result: success')
 
     def __accept_new_connection(self):
         """
@@ -50,9 +66,10 @@ class Server:
         Function blocks until a connection to a client is made.
         Then connection created is printed and returned
         """
-
-        # Connection arrived
-        logging.info('action: accept_connections | result: in_progress')
-        c, addr = self._server_socket.accept()
-        logging.info(f'action: accept_connections | result: success | ip: {addr[0]}')
-        return c
+        try:
+            logging.info('action: accept_connections | result: in_progress')
+            c, addr = self._server_socket.accept()
+            logging.info(f'action: accept_connections | result: success | ip: {addr[0]}')
+            return c
+        except OSError:
+            return None
