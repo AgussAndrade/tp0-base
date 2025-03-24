@@ -15,7 +15,7 @@ class Server:
 
         signal.signal(signal.SIGTERM, self._graceful_shutdown)
 
-    def _graceful_shutdown(self, signum):
+    def _graceful_shutdown(self, signum, term):
         logging.info(f'action: shutdown | result: in_progress | signal: {signum}')
         self._running = False
         try:
