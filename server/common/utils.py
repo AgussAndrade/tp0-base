@@ -49,3 +49,44 @@ def load_bets() -> list[Bet]:
         for row in reader:
             yield Bet(row[0], row[1], row[2], row[3], row[4], row[5])
 
+
+def recv_until(sock, delimiter=b'\n'):
+    data = b''
+    while True:
+        chunk = sock.recv(1024)
+        if not chunk:
+            break
+        data += chunk
+        if delimiter in chunk:
+            break
+    return data
+
+def construct_bet_by_msg(msg):
+    return Bet(msg[0],msg[1],msg[2],msg[3],msg[4],msg[5])
+
+def check_bet_msg(msg):
+    if len(msg) != 6:
+        return False
+    if not msg[0].isdigit() or not msg[3].isdigit() or not msg[5].isdigit():
+        return False
+    if not msg[1] or not msg[2]:
+        return False
+    if not is_strict_iso_date_format(msg[4]):
+        return False
+    return True    
+
+def is_strict_iso_date_format(date_str: str) -> bool:
+    parts = date_str.split('-')
+    if len(parts) != 3:
+        return False
+
+    year, month, day = parts
+
+    if not (year.isdigit() and len(year) == 4):
+        return False
+    if not (month.isdigit() and len(month) == 2):
+        return False
+    if not (day.isdigit() and len(day) == 2):
+        return False
+
+    return True

@@ -170,6 +170,58 @@ Se deberá implementar un módulo de comunicación entre el cliente y el servido
 * Correcta separación de responsabilidades entre modelo de dominio y capa de comunicación.
 * Correcto empleo de sockets, incluyendo manejo de errores y evitando los fenómenos conocidos como [_short read y short write_](https://cs61.seas.harvard.edu/site/2018/FileDescriptors/).
 
+#### Solucion
+##### protocolo cliente
+El mensaje que representa una apuesta tiene el siguiente formato:
+
+```
+numero_cliente;nombre;apellido;dni;nacimiento;numero\n
+```
+
+- Campos separados por `;`
+- Cada campo es un valor obligatorio y ordernado
+- El mensaje termina con un **`\n`**
+
+##### protocolo servidor
+Segun si lo enviado fue correcto o no (puede ser un error debido a chequeo o un error porque llego alguna informacion mal).El servidor puede responder con:
+
+```
+OK\n
+FAIL\n
+```
+
+
+---
+
+##### Modificaciones realizadas en el cliente
+
+- Se agrego una estructura `Bet` con los campos de la apuesta
+- Se creo una funcion `getBets(id string) []Bet` que construye las apuestas desde variables de entorno
+- Se cambio el bucle original para:
+  - Enviar apuestas una a una
+  - Armar manualmente el mensaje via metodo en utils
+  - Enviar con bucle de `Write()` para evitar **short-write**
+  - Leer byte a byte hasta `\n` para evitar **short-read**
+  - Validar que la respuesta sea `"OK\n"`
+
+##### Modificaciones realizadas en el servidor
+
+- Se agregó una funcion `recv_until` para leer correctamente mensajes hasta el delimitador (evita **short-read**)
+- Se utilizo la funcion `sendall` para enviar mensajes evitando **short-write**
+- Se parseo el mensaje usando `split(';')` para obtener una lista de atributos ordenados para asi crear un `bet`
+- Se devolvio la respuesta `"OK\n"` al cliente si fue exitosa
+- Se devolvio la respuesta `"FAIL\n"` al cliente si fue erronea
+
+##### Modificaciones realizadas en generar-compose.sh
+
+Se modifico el script para agregar las variables de entorno de hasta 5 clientes leyendo de un archivo ubicado en `bet/{numero_client}.env` (en caso de querer agregar mas clientes hay que agregar su respectivo .env)
+
+para correr el archivo ejecutar desde la raiz del proyecto
+
+```bash
+./generar-compose.sh docker-compose-dev.yaml 1
+make docker-compose-up
+```
 
 ### Ejercicio N°6:
 Modificar los clientes para que envíen varias apuestas a la vez (modalidad conocida como procesamiento por _chunks_ o _batchs_). 

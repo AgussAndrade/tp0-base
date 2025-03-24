@@ -31,6 +31,19 @@ services:
 EOF
 
 for i in $(seq 1 "$CLIENT_NUMBER"); do
+    ENV_FILE="./client/bet/${i}.env"
+
+    if [ ! -f "$ENV_FILE" ]; then
+        echo "$ENV_FILE not found. Skipping client$i"
+        continue
+    fi
+
+    NOMBRE=$(grep '^NOMBRE=' "$ENV_FILE" | cut -d'=' -f2-)
+    APELLIDO=$(grep '^APELLIDO=' "$ENV_FILE" | cut -d'=' -f2-)
+    DOCUMENTO=$(grep '^DOCUMENTO=' "$ENV_FILE" | cut -d'=' -f2-)
+    NACIMIENTO=$(grep '^NACIMIENTO=' "$ENV_FILE" | cut -d'=' -f2-)
+    NUMERO=$(grep '^NUMERO=' "$ENV_FILE" | cut -d'=' -f2-)
+
     cat <<EOF >> "$COMPOSE_FILE"
   client$i:
     container_name: client$i
@@ -40,10 +53,16 @@ for i in $(seq 1 "$CLIENT_NUMBER"); do
       - ./client/config.yaml:/config.yaml
     environment:
       - CLI_ID=$i
+      - NOMBRE=$NOMBRE
+      - APELLIDO=$APELLIDO
+      - DOCUMENTO=$DOCUMENTO
+      - NACIMIENTO=$NACIMIENTO
+      - NUMERO=$NUMERO
     networks:
       - testing_net
     depends_on:
       - server
+
 EOF
 done
 

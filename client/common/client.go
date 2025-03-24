@@ -2,11 +2,11 @@ package common
 
 import (
 	"bufio"
-	"fmt"
 	"net"
 	"time"
 	"context"
 	"os"
+	"strings"
 	"os/signal"
 	"syscall"
 	"github.com/op/go-logging"
@@ -60,42 +60,43 @@ func (c *Client) StartClientLoop() {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGTERM)
 
+	bets := getBets(c.config.ID)
 	go func() {
 		<-sigs
 		cancel()
 	}()
-	// There is an autoincremental msgID to identify every message sent
-	// Messages if the message amount threshold has not been surpassed
-	for msgID := 1; msgID <= c.config.LoopAmount; msgID++ {
+
+	for _, bet := range bets {
 		select {
 		case <-ctx.Done():
 			log.Infof("action: shutdown | result: success | client_id: %v", c.config.ID)
-			return
+			c.conn.Close()
+			return	
 		default:
 			// Create the connection the server in every loop iteration. Send an
 			c.createClientSocket()
 
-			// TODO: Modify the send to avoid short-write
-			fmt.Fprintf(
-				c.conn,
-				"[CLIENT %v] Message N°%v\n",
-				c.config.ID,
-				msgID,
-			)
-			msg, err := bufio.NewReader(c.conn).ReadString('\n')
+			msg := formatBetMessage(bet)
+
+			totalSent := c.SendMessage(msg)
+
+			if totalSent != len(msg) {
+				c.conn.Close()
+				return
+			}
+			response := c.ReceiveMessage()
 			c.conn.Close()
 
-			if err != nil {
-				log.Errorf("action: receive_message | result: fail | client_id: %v | error: %v",
-					c.config.ID,
-					err,
-				)
+			if !isOkMsg(response) {
+				log.Errorf("action: receive_response | result: fail | client_id: %v | error: Not Ok msg",
+				c.config.ID,
+			)
 				return
 			}
 
-			log.Infof("action: receive_message | result: success | client_id: %v | msg: %v",
-				c.config.ID,
-				msg,
+			log.Infof("action: apuesta_enviada | result: success | dni: %s | numero: %s",
+				bet.Document,
+				bet.Number,
 			)
 
 			// Wait a time between sending one message and the next one
@@ -104,4 +105,35 @@ func (c *Client) StartClientLoop() {
 
 	}
 	log.Infof("action: loop_finished | result: success | client_id: %v", c.config.ID)
+}
+
+func (c *Client) SendMessage(msg string) int {
+	totalSent := 0
+	for totalSent < len(msg) {
+		n, err := c.conn.Write([]byte(msg)[totalSent:])
+		if err != nil {
+			log.Errorf("action: send_bet | result: fail | error: %v", err)
+			return totalSent
+		}
+		totalSent += n
+	}
+	return totalSent
+}
+
+func (c *Client) ReceiveMessage() string {
+
+	var response strings.Builder
+	reader := bufio.NewReader(c.conn)
+	
+	for {
+		chunk, err := reader.ReadByte()
+		if err != nil {
+			return ""
+		}
+		response.WriteByte(chunk)
+		if isEndOfMsg(chunk) {
+			break
+		}
+	}
+	return response.String()
 }
