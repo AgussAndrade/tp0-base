@@ -15,7 +15,7 @@ class Server:
 
         signal.signal(signal.SIGTERM, self._graceful_shutdown)
 
-    def _graceful_shutdown(self, signum):
+    def _graceful_shutdown(self, signum, term):
         logging.info(f'action: shutdown | result: in_progress | signal: {signum}')
         self._running = False
         try:
@@ -42,27 +42,38 @@ class Server:
                 break
 
     def __handle_client_connection(self, client_sock):
-        """
-        Read message from a specific client socket and closes the socket
-
-        If a problem arises in the communication with the client, the
-        client socket will also be closed
-        """
         try:
-            msg = recv_until(client_sock, delimiter=b'\n').decode('utf-8').strip().split(';')
-            addr = client_sock.getpeername()
-            if not check_bet_msg(msg):
-                client_sock.sendall(b'FAIL\n')
-                return
-            
-            bet = construct_bet_by_msg(msg)
-            client_sock.sendall(b'OK\n')
-            store_bets([bet])
-            logging.info(f'action: apuesta_almacenada | result: success | dni: {bet.document} | numero: {bet.number}')
-            
+            while True:
+                raw_data = recv_until(client_sock, delimiter=b'\t')
+                if raw_data is None:
+                    logging.warning("action: receive_batch | result: fail | reason: timeout or empty")
+                    break
+
+                raw_data = raw_data.strip().decode('utf-8').strip('\t')
+                if raw_data == '':
+                    logging.info("action: receive_batch | result: success | reason: empty batch")
+                    break
+
+                lines = [line for line in raw_data.split('\n') if line.strip()]
+
+                bets = []
+                for line in lines:
+                    msg = line.strip().split(';')
+                    if not check_bet_msg(msg):
+                        client_sock.sendall(b'FAIL\t')
+                        logging.warning(f'action: apuesta_recibida | result: fail | cantidad: {len(lines)} | msg: {msg}')
+                        break
+                    bet = construct_bet_by_msg(msg)
+                    bets.append(bet)
+                
+                store_bets(bets)
+                client_sock.sendall(b'OK\t')
+                logging.info(f'action: apuesta_recibida | result: success | cantidad: {len(bets)}')
+                continue
 
         except Exception as e:
-            logging.error(f'action: receive_bet | result: fail | error: {e}')
+            logging.error(f'action: receive_batch | result: fail | error: {e}')
+            client_sock.sendall(b'FAIL\t')
         finally:
             client_sock.close()
             logging.info('action: close_client_socket | result: success')

@@ -21,5 +21,14 @@ func isOkMsg(msg string) bool{
 }
 
 func isEndOfMsg(aByte byte) bool{
-	return aByte == '\n'
+	return aByte == '\t'
+}
+
+func formatBatchMessageWithEnd(batch []Bet) string {
+	var b strings.Builder
+	for _, bet := range batch {
+		b.WriteString(formatBetMessage(bet))
+	}
+	b.WriteByte('\t')
+	return b.String()
 }

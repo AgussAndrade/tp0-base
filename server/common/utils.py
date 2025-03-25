@@ -2,7 +2,6 @@ import csv
 import datetime
 import time
 
-
 """ Bets storage location. """
 STORAGE_FILEPATH = "./bets.csv"
 """ Simulated winner number in the lottery contest. """
@@ -50,14 +49,15 @@ def load_bets() -> list[Bet]:
             yield Bet(row[0], row[1], row[2], row[3], row[4], row[5])
 
 
-def recv_until(sock, delimiter=b'\n'):
+def recv_until(sock, delimiter=b'\t'):
     data = b''
+
     while True:
         chunk = sock.recv(1024)
         if not chunk:
             break
         data += chunk
-        if delimiter in chunk:
+        if delimiter in data:
             break
     return data
 

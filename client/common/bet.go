@@ -1,7 +1,5 @@
 package common
-import (
-	"os"
-)
+
 type Bet struct {
 	ClientId  string
 	FirstName string
@@ -11,14 +9,17 @@ type Bet struct {
 	Number    string
 }
 
-func getBets(clientId string) []Bet {
-	bet := Bet{
-		ClientId:  clientId,
-		FirstName: os.Getenv("NOMBRE"),
-		LastName:  os.Getenv("APELLIDO"),
-		Document:  os.Getenv("DOCUMENTO"),
-		BirthDate: os.Getenv("NACIMIENTO"),
-		Number:    os.Getenv("NUMERO"),
+func ParseBet(line []string, clientID string) (Bet, bool) {
+	if len(line) != 5 {
+		return Bet{}, false
 	}
-	return []Bet{bet}
+	bet := Bet{
+		ClientId:  clientID,
+		FirstName: line[0],
+		LastName:  line[1],
+		Document:  line[2],
+		BirthDate: line[3],
+		Number:    line[4],
+	}
+	return bet, true
 }

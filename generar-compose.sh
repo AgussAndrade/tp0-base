@@ -31,18 +31,12 @@ services:
 EOF
 
 for i in $(seq 1 "$CLIENT_NUMBER"); do
-    ENV_FILE="./client/bet/${i}.env"
+    ENV_FILE="./.data/agency-${i}.csv"
 
     if [ ! -f "$ENV_FILE" ]; then
         echo "$ENV_FILE not found. Skipping client$i"
         continue
     fi
-
-    NOMBRE=$(grep '^NOMBRE=' "$ENV_FILE" | cut -d'=' -f2-)
-    APELLIDO=$(grep '^APELLIDO=' "$ENV_FILE" | cut -d'=' -f2-)
-    DOCUMENTO=$(grep '^DOCUMENTO=' "$ENV_FILE" | cut -d'=' -f2-)
-    NACIMIENTO=$(grep '^NACIMIENTO=' "$ENV_FILE" | cut -d'=' -f2-)
-    NUMERO=$(grep '^NUMERO=' "$ENV_FILE" | cut -d'=' -f2-)
 
     cat <<EOF >> "$COMPOSE_FILE"
   client$i:
@@ -51,13 +45,10 @@ for i in $(seq 1 "$CLIENT_NUMBER"); do
     entrypoint: /client
     volumes:
       - ./client/config.yaml:/config.yaml
+      - ./.data/agency-$i.csv:/data/agency.csv
     environment:
       - CLI_ID=$i
-      - NOMBRE=$NOMBRE
-      - APELLIDO=$APELLIDO
-      - DOCUMENTO=$DOCUMENTO
-      - NACIMIENTO=$NACIMIENTO
-      - NUMERO=$NUMERO
+      - CLI_BATCH_MAXBYTES=8192
     networks:
       - testing_net
     depends_on:

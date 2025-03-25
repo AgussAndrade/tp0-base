@@ -25,31 +25,10 @@ services:
     entrypoint: /client
     volumes:
       - ./client/config.yaml:/config.yaml
+      - ./.data/agency-1.csv:/data/agency.csv
     environment:
       - CLI_ID=1
-      - NOMBRE=j
-      - APELLIDO=a
-      - DOCUMENTO=1
-      - NACIMIENTO=1999-03-17
-      - NUMERO=7574
-    networks:
-      - testing_net
-    depends_on:
-      - server
-
-  client2:
-    container_name: client2
-    image: client:latest
-    entrypoint: /client
-    volumes:
-      - ./client/config.yaml:/config.yaml
-    environment:
-      - CLI_ID=2
-      - NOMBRE=ja
-      - APELLIDO=aa
-      - DOCUMENTO=12
-      - NACIMIENTO=1999-03-17
-      - NUMERO=7575
+      - CLI_BATCH_MAXBYTES=8192
     networks:
       - testing_net
     depends_on:
