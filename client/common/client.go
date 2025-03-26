@@ -92,6 +92,24 @@ func (c *Client) StartClientLoop() {
 		log.Infof("action: loop_finished | result: success | client_id: %v", c.config.ID)
 	}
 	_, err = c.conn.Write([]byte{'\t'})
+	if err != nil {
+		log.Errorf("action: send_eof | result: fail | error: %v", err)
+		return
+	}
+
+	raw := c.ReceiveMessage()
+
+	lines := strings.Split(strings.TrimSuffix(raw, "\t"), ";")
+
+	var totalWinners int
+	if len(lines) == 1 && lines[0] == "" {
+		totalWinners = 0
+	} else {
+		totalWinners = len(lines)
+	}
+
+	log.Infof("action: consulta_ganadores | result: success | cant_ganadores: %d", totalWinners)
+
 }
 
 

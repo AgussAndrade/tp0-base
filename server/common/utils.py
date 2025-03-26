@@ -90,3 +90,19 @@ def is_strict_iso_date_format(date_str: str) -> bool:
         return False
 
     return True
+
+def take_winners():
+        all_bets = load_bets()
+        winners_by_agency = {}
+
+        for bet in all_bets:
+            if has_won(bet):
+                agency = bet.agency
+                if agency not in winners_by_agency:
+                    winners_by_agency[agency] = []
+                winners_by_agency[agency].append(bet.document)
+        
+        return winners_by_agency
+
+def format_winners_list(document_list):
+    return ';'.join(document_list) + '\t'

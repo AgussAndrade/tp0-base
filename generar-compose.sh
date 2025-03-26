@@ -25,6 +25,7 @@ services:
       - ./server/config.ini:/config.ini
     environment:
       - PYTHONUNBUFFERED=1
+      - CLIENTNUMBER=$CLIENT_NUMBER
     networks:
       - testing_net
 

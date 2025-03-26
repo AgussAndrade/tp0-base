@@ -65,7 +65,7 @@ func (bs *BatchStream) NextBatch(ctx context.Context) ([]Bet, error) {
 		batch = append(batch, bet)
 		currentSize += msgLen
 		// add tolerance to avoid sending max len than default.
-		if currentSize+msgLen > bs.maxBytes-msgLen-msgLen {
+		if currentSize > bs.maxBytes-msgLen {
 			break
 		}
 	}
