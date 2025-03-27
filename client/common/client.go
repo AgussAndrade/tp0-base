@@ -85,12 +85,17 @@ func (c *Client) StartClientLoop() {
 				return
 			}
 			response := c.ReceiveMessage()
+			if response == "" {
+				log.Errorf("action: receive_response | result: fail | client_id: %v | error: Not Ok msg",
+					c.config.ID,
+				)
+			}
 			c.conn.Close()
 
 			if !isOkMsg(response) {
 				log.Errorf("action: receive_response | result: fail | client_id: %v | error: Not Ok msg",
-				c.config.ID,
-			)
+					c.config.ID,
+				)
 				return
 			}
 
