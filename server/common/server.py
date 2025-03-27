@@ -2,6 +2,7 @@ import socket
 import logging
 import signal
 import sys
+import threading
 
 from .utils import *
 
@@ -14,6 +15,10 @@ class Server:
         self._running = True
         self._clients = {}
         self._clients_number = clients_number
+        self._lock = threading.Lock()
+        self._bets_lock = threading.Lock()
+        self._threads = []
+        self._clients_connected = 0
 
         signal.signal(signal.SIGTERM, self._graceful_shutdown)
 
@@ -38,24 +43,47 @@ class Server:
         communication with a client. After client with communucation
         finishes, servers starts to accept new connections again
         """
-        clients_connected = 0
-        while self._running and clients_connected < self._clients_number:
+        self._server_socket.settimeout(5)
+        
+        while self._running:
             try:
                 client_sock = self.__accept_new_connection()
                 if client_sock:
-                    self.__handle_client_connection(client_sock)
-                    clients_connected += 1
-            except OSError:
+                    thread = threading.Thread(
+                        target=self.__handle_client_connection,
+                        args=(client_sock,),
+                    )
+                    thread.start()
+                    logging.info(f"action: start_thread | result: success | thread_id: {thread.ident}")
+                    self._threads.append(thread)
+                    self._clients_connected += 1
+                    if self._clients_connected == self._clients_number:
+                        break
+            except Exception:
                 break
-        self.__handle_bets()
+        logging.info("action: waiting_for_clients | result: in_progress")
+        for t in self._threads:
+            t.join()
+        
+        if self._clients:
+            logging.info(f"action: handle_bets | result: in_progress | connected: {len(self._clients)}")
+            self.__handle_bets()
+        else:
+            logging.warning("action: handle_bets | result: skip | reason: no_clients")
+
         self._server_socket.close()
 
     def __handle_client_connection(self, client_sock):
+        agency = -1
         try:
             while True:
                 raw_data = recv_until(client_sock, delimiter=b'\t')
-                if raw_data is None:
+                if raw_data is None or raw_data == b'':
                     logging.warning("action: receive_batch | result: fail | reason: timeout or empty")
+                    with self._lock:
+                        if agency != -1:
+                            self._clients.pop(agency)
+                    client_sock.close()
                     break
 
                 raw_data = raw_data.strip().decode('utf-8').strip('\t')
@@ -73,18 +101,20 @@ class Server:
                         logging.warning(f'action: apuesta_recibida | result: fail | cantidad: {len(lines)} | msg: {msg}')
                         break
                     bet = construct_bet_by_msg(msg)
-                    if bet.agency not in self._clients:
-                        self._clients[bet.agency] = client_sock
                     bets.append(bet)
+                with self._lock:
+                    if len(bets) > 0 and bets[0].agency not in self._clients:
+                        agency = bet.agency
+                        self._clients[bet.agency] = client_sock            
                 
-                store_bets(bets)
+                with self._bets_lock:
+                    store_bets(bets)
                 client_sock.sendall(b'OK\t')
                 logging.info(f'action: apuesta_recibida | result: success | cantidad: {len(bets)}')
                 continue
-
         except Exception as e:
-            logging.error(f'action: receive_batch | result: fail | error: {e}')
-            client_sock.sendall(b'FAIL\t')
+            logging.error(f"action: receive_batch | result: fail | error: {e}")
+            client_sock.close()
 
     def __accept_new_connection(self):
         """
