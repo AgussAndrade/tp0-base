@@ -159,6 +159,10 @@ func (c *Client) retryBatchUntilSuccess(batch []Bet, maxRetries int) error {
 		}
 
 		response := c.ReceiveMessage()
+		if response == "" {
+			log.Errorf("action: send_batch | result: fail | client_id: %v | reason: connection_closed", c.config.ID)
+			return fmt.Errorf("connection_closed")
+		}
 		// sleep period between messages either fail or success
 		time.Sleep(c.config.LoopPeriod)
 		if isOkMsg(response) {

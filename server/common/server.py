@@ -45,7 +45,7 @@ class Server:
         try:
             while True:
                 raw_data = recv_until(client_sock, delimiter=b'\t')
-                if raw_data is None:
+                if raw_data == b'':
                     logging.warning("action: receive_batch | result: fail | reason: timeout or empty")
                     break
 

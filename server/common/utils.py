@@ -54,7 +54,7 @@ def recv_until(sock, delimiter=b'\t'):
 
     while True:
         chunk = sock.recv(1024)
-        if not chunk:
+        if not chunk or chunk == b'':
             break
         data += chunk
         if delimiter in data:
