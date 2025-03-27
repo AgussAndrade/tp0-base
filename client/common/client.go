@@ -84,7 +84,8 @@ func (c *Client) StartClientLoop() {
 		log.Errorf("action: batch_loop | result: fail | client_id: %v | error: %v", c.config.ID, err)
 		return
 	}
-
+	//sleep based on https://campusgrado.fi.uba.ar/mod/forum/discuss.php?d=29739#p52493
+	time.Sleep(200 * time.Millisecond)
 	select {
 	case <-ctx.Done():
 		log.Infof("action: shutdown | result: success | client_id: %v", c.config.ID)
