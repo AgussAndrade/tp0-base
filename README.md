@@ -28,9 +28,16 @@ Modificar el servidor para que permita aceptar conexiones y procesar mensajes en
 
 #### Solucion
 
-##### Modificaciones realizadas en el servidor
+##### Metodo sincronizacion
 
 - Se agrego una pool de threads al hilo principal que ejecutara cada handleo de agencia
+- Si un thread pierde su socket entonces se borra de clients
+- habran secciones criticas en la modificacion y consulta de `clients` y file de `bets` mediante el uso de `threading.Lock()`
+
+----
+
+##### Modificaciones realizadas en el servidor
+
 - En el loop principal se esparara que termine el pool de threads
 - Se agregaron 2 locks para controlar la seccion critica del guardado de `bets` y el diccionario de `clients`
 - Se agregaron logs para controlar la espera de pools y si alguno fallo
