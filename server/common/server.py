@@ -26,9 +26,10 @@ class Server:
         logging.info(f'action: shutdown | result: in_progress | signal: {signum}')
         self._running = False
         try:
-            for sock in self._clients.values:
-                if sock:
-                    sock.close()
+            with self._lock:
+                for sock in self._clients.values:
+                    if sock:
+                        sock.close()
             self._server_socket.close()
             logging.info('action: close_socket | result: success')
         except Exception as e:
@@ -59,7 +60,7 @@ class Server:
                     self._clients_connected += 1
                     if self._clients_connected == self._clients_number:
                         break
-            except Exception:
+            except OSError:
                 break
         logging.info("action: waiting_for_clients | result: in_progress")
         for t in self._threads:
@@ -115,6 +116,7 @@ class Server:
         except Exception as e:
             logging.error(f"action: receive_batch | result: fail | error: {e}")
             client_sock.close()
+            exit(1)
 
     def __accept_new_connection(self):
         """

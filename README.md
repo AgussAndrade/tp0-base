@@ -48,3 +48,80 @@ Para correr el archivo ejecutar desde la raiz del proyecto:
 ./generar-compose.sh docker-compose-dev.yaml 5
 make docker-compose-up
 ```
+
+##### Comentarios luego de la exposicion
+- Luego de agregar el sleep pasaron las test del ej6 tanto en deliver como test
+- La eleccion de threads fue mas por comodidas y tiempo que por otra cosa
+- Se agrego el lock en el gracefull_shutdown
+- Se cambio el exception a solo hacer break si es IOException
+- demostracion de paralelizacion
+```
+2025-03-27 19:47:32 2025-03-27 22:47:32 DEBUG    action: config | result: success | port: 12345 | listen_backlog: 5 | logging_level: DEBUG
+2025-03-27 19:47:32 2025-03-27 22:47:32 INFO     action: accept_connections | result: in_progress
+2025-03-27 19:47:32 2025-03-27 22:47:32 INFO     action: accept_connections | result: success | ip: 172.25.125.3
+2025-03-27 19:47:32 2025-03-27 22:47:32 INFO     action: start_thread | result: success | thread_id: 281473838215648
+2025-03-27 19:47:32 2025-03-27 22:47:32 INFO     action: accept_connections | result: in_progress
+2025-03-27 19:47:32 2025-03-27 22:47:32 INFO     action: accept_connections | result: success | ip: 172.25.125.4
+2025-03-27 19:47:32 2025-03-27 22:47:32 INFO     action: start_thread | result: success | thread_id: 281473829822944
+2025-03-27 19:47:32 2025-03-27 22:47:32 INFO     action: accept_connections | result: in_progress
+2025-03-27 19:47:32 2025-03-27 22:47:32 INFO     action: apuesta_recibida | result: success | cantidad: 10
+2025-03-27 19:47:32 2025-03-27 22:47:32 INFO     action: apuesta_recibida | result: success | cantidad: 10
+2025-03-27 19:47:32 2025-03-27 22:47:32 INFO     action: accept_connections | result: success | ip: 172.25.125.6
+2025-03-27 19:47:32 2025-03-27 22:47:32 INFO     action: start_thread | result: success | thread_id: 281473821430240
+2025-03-27 19:47:32 2025-03-27 22:47:32 INFO     action: accept_connections | result: in_progress
+2025-03-27 19:47:32 2025-03-27 22:47:32 INFO     action: apuesta_recibida | result: success | cantidad: 10
+2025-03-27 19:47:32 2025-03-27 22:47:32 INFO     action: accept_connections | result: success | ip: 172.25.125.7
+2025-03-27 19:47:32 2025-03-27 22:47:32 INFO     action: start_thread | result: success | thread_id: 281473813037536
+2025-03-27 19:47:32 2025-03-27 22:47:32 INFO     action: accept_connections | result: in_progress
+2025-03-27 19:47:32 2025-03-27 22:47:32 INFO     action: accept_connections | result: success | ip: 172.25.125.5
+2025-03-27 19:47:32 2025-03-27 22:47:32 INFO     action: start_thread | result: success | thread_id: 281473804644832
+2025-03-27 19:47:32 2025-03-27 22:47:32 INFO     action: waiting_for_clients | result: in_progress
+2025-03-27 19:47:32 2025-03-27 22:47:32 INFO     action: apuesta_recibida | result: success | cantidad: 10
+2025-03-27 19:47:32 2025-03-27 22:47:32 INFO     action: apuesta_recibida | result: success | cantidad: 10
+2025-03-27 19:47:32 2025-03-27 22:47:32 INFO     action: apuesta_recibida | result: success | cantidad: 10
+2025-03-27 19:47:32 2025-03-27 22:47:32 INFO     action: apuesta_recibida | result: success | cantidad: 10
+2025-03-27 19:47:32 2025-03-27 22:47:32 INFO     action: apuesta_recibida | result: success | cantidad: 10
+2025-03-27 19:47:32 2025-03-27 22:47:32 INFO     action: apuesta_recibida | result: success | cantidad: 10
+2025-03-27 19:47:32 2025-03-27 22:47:32 INFO     action: apuesta_recibida | result: success | cantidad: 10
+2025-03-27 19:47:32 2025-03-27 22:47:32 INFO     action: apuesta_recibida | result: success | cantidad: 10
+2025-03-27 19:47:32 2025-03-27 22:47:32 INFO     action: apuesta_recibida | result: success | cantidad: 10
+2025-03-27 19:47:32 2025-03-27 22:47:32 INFO     action: apuesta_recibida | result: success | cantidad: 10
+2025-03-27 19:47:32 2025-03-27 22:47:32 INFO     action: apuesta_recibida | result: success | cantidad: 10
+2025-03-27 19:47:32 2025-03-27 22:47:32 INFO     action: apuesta_recibida | result: success | cantidad: 10
+2025-03-27 19:47:33 2025-03-27 22:47:33 INFO     action: apuesta_recibida | result: success | cantidad: 10
+2025-03-27 19:47:33 2025-03-27 22:47:33 INFO     action: apuesta_recibida | result: success | cantidad: 10
+2025-03-27 19:47:33 2025-03-27 22:47:33 INFO     action: apuesta_recibida | result: success | cantidad: 10
+2025-03-27 19:47:33 2025-03-27 22:47:33 INFO     action: apuesta_recibida | result: success | cantidad: 10
+2025-03-27 19:47:33 2025-03-27 22:47:33 INFO     action: apuesta_recibida | result: success | cantidad: 10
+2025-03-27 19:47:33 2025-03-27 22:47:33 INFO     action: apuesta_recibida | result: success | cantidad: 10
+2025-03-27 19:47:33 2025-03-27 22:47:33 INFO     action: apuesta_recibida | result: success | cantidad: 10
+2025-03-27 19:47:33 2025-03-27 22:47:33 INFO     action: apuesta_recibida | result: success | cantidad: 10
+2025-03-27 19:47:33 2025-03-27 22:47:33 INFO     action: apuesta_recibida | result: success | cantidad: 10
+2025-03-27 19:47:33 2025-03-27 22:47:33 INFO     action: apuesta_recibida | result: success | cantidad: 10
+2025-03-27 19:47:33 2025-03-27 22:47:33 INFO     action: apuesta_recibida | result: success | cantidad: 10
+2025-03-27 19:47:33 2025-03-27 22:47:33 INFO     action: apuesta_recibida | result: success | cantidad: 10
+2025-03-27 19:47:33 2025-03-27 22:47:33 INFO     action: apuesta_recibida | result: success | cantidad: 10
+2025-03-27 19:47:33 2025-03-27 22:47:33 INFO     action: apuesta_recibida | result: success | cantidad: 10
+2025-03-27 19:47:33 2025-03-27 22:47:33 INFO     action: apuesta_recibida | result: success | cantidad: 10
+2025-03-27 19:47:33 2025-03-27 22:47:33 INFO     action: receive_batch | result: success | reason: empty batch
+2025-03-27 19:47:33 2025-03-27 22:47:33 INFO     action: receive_batch | result: success | reason: empty batch
+2025-03-27 19:47:33 2025-03-27 22:47:33 INFO     action: receive_batch | result: success | reason: empty batch
+2025-03-27 19:47:33 2025-03-27 22:47:33 INFO     action: receive_batch | result: success | reason: empty batch
+2025-03-27 19:47:33 2025-03-27 22:47:33 INFO     action: receive_batch | result: success | reason: empty batch
+2025-03-27 19:47:33 2025-03-27 22:47:33 INFO     action: handle_bets | result: in_progress | connected: 5
+2025-03-27 19:47:33 2025-03-27 22:47:33 INFO     action: consulta_ganadores | result: success | cant_ganadores: 5
+2025-03-27 19:47:33 2025-03-27 22:47:33 INFO     action: close_client_socket | result: success | agency: 5
+2025-03-27 19:47:33 2025-03-27 22:47:33 INFO     action: consulta_ganadores | result: success | cant_ganadores: 3
+2025-03-27 19:47:33 2025-03-27 22:47:33 INFO     action: close_client_socket | result: success | agency: 3
+2025-03-27 19:47:33 2025-03-27 22:47:33 INFO     action: consulta_ganadores | result: success | cant_ganadores: 2
+2025-03-27 19:47:33 2025-03-27 22:47:33 INFO     action: close_client_socket | result: success | agency: 2
+2025-03-27 19:47:33 2025-03-27 22:47:33 INFO     action: consulta_ganadores | result: success | cant_ganadores: 1
+2025-03-27 19:47:33 2025-03-27 22:47:33 INFO     action: close_client_socket | result: success | agency: 1
+2025-03-27 19:47:33 2025-03-27 22:47:33 INFO     action: consulta_ganadores | result: success | cant_ganadores: 4
+2025-03-27 19:47:33 2025-03-27 22:47:33 INFO     action: close_client_socket | result: success | agency: 4
+2025-03-27 19:47:33 2025-03-27 22:47:33 INFO     action: sorteo | result: success
+```
+
+![alt text](deliver.png)
+
+![alt text](test.png)
