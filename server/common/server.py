@@ -51,11 +51,15 @@ class Server:
         self._server_socket.close()
 
     def __handle_client_connection(self, client_sock):
+        agency = -1
         try:
             while True:
                 raw_data = recv_until(client_sock, delimiter=b'\t')
-                if raw_data is None:
-                    logging.warning("action: receive_batch | result: fail | reason: timeout or empty")
+                if raw_data is None or raw_data == b'':
+                    logging.warning(f"action: receive_batch | result: fail | reason: timeout or empty {raw_data}")
+                    if agency != -1:
+                        self._clients.pop(agency)
+                    client_sock.close()
                     break
 
                 raw_data = raw_data.strip().decode('utf-8').strip('\t')
@@ -73,9 +77,10 @@ class Server:
                         logging.warning(f'action: apuesta_recibida | result: fail | cantidad: {len(lines)} | msg: {msg}')
                         break
                     bet = construct_bet_by_msg(msg)
+                    bets.append(bet)
                     if bet.agency not in self._clients:
                         self._clients[bet.agency] = client_sock
-                    bets.append(bet)
+                        agency = bet.agency
                 
                 store_bets(bets)
                 client_sock.sendall(b'OK\t')
@@ -84,7 +89,7 @@ class Server:
 
         except Exception as e:
             logging.error(f'action: receive_batch | result: fail | error: {e}')
-            client_sock.sendall(b'FAIL\t')
+            client_sock.close()
 
     def __accept_new_connection(self):
         """
@@ -122,7 +127,7 @@ class Server:
                 except:
                     pass
 
-        if success:
+        if success and len(self._clients.keys()) > 0:
             logging.info("action: sorteo | result: success")
         else:
             logging.info("action: sorteo | result: fail")
